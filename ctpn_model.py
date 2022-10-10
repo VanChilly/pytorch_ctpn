@@ -28,7 +28,7 @@ class RPN_REGR_Loss(nn.Module):
             cls = target[0, :, 0]
             regr = target[0, :, 1:3]
             regr_keep = (cls == 1).nonzero()[:, 0]
-            regr_true = regr[regr_keep] # 选出预测为有对象的
+            regr_true = regr[regr_keep]
             regr_pred = input[0][regr_keep]
             diff = torch.abs(regr_true - regr_pred)
             less_one = (diff<1.0/self.sigma).float()
@@ -105,7 +105,7 @@ class CTPN_Model(nn.Module):
 
         x1 = x.permute(0, 2, 3, 1).contiguous()  # channels last
         b = x1.size()  # batch_size, h, w, c
-        x1 = x1.view(b[0] * b[1], b[2], b[3])
+        x1 = x1.view(b[0] * b[1], b[2], b[3]) # for rnn
 
         x2, _ = self.brnn(x1)
 

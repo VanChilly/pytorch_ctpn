@@ -20,11 +20,11 @@ import config
 prob_thresh = 0.7
 width = 600
 device = torch.device('cuda:0' if torch.cuda.is_available() else 'cpu')
-weights = os.path.join(config.checkpoints_dir, 'trained weights file.pth.tar')
-img_path = 'path to test image'
+img_path = '/HOME/scz0831/run/prune/dataset/VOCdevkit/VOC2007/JPEGImages/img_1001.jpg'
 
 model = CTPN_Model()
-model.load_state_dict(torch.load(weights, map_location=device)['model_state_dict'])
+# weights = os.path.join(config.checkpoints_dir, 'trained weights file.pth.tar')
+# model.load_state_dict(torch.load(weights, map_location=device)['model_state_dict'])
 model.to(device)
 model.eval()
 
@@ -87,4 +87,5 @@ with torch.no_grad():
                     2,
                     cv2.LINE_AA)
 
-    dis(image_c)
+    # dis(image_c)
+cv2.imwrite('./test.jpg', image_c)

@@ -87,7 +87,7 @@ class VOCDataset(Dataset):
         cls = torch.from_numpy(cls).float()
         regr = torch.from_numpy(regr).float()
 
-        print(f"m_img: {m_img.shape}, cls: {cls.shape}, regr: {regr.shape}")
+        # print(f"m_img: {m_img.shape}, cls: {cls.shape}, regr: {regr.shape}")
         # m_img: torch.Size([3, 600, 800])
         # cls: torch.Size([1, 18500])
         # regr: torch.Size([18500, 3]): [N, [cls, Vc, Vh]]

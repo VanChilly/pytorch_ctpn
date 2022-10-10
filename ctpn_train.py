@@ -96,6 +96,8 @@ if __name__ == '__main__':
             optimizer.zero_grad()
     
             out_cls, out_regr = model(imgs)
+            # out_cls: torch.Size([1, 18500, 2]), out_regr: torch.Size([1, 18500, 2])
+            # print(f"out_cls: {out_cls.shape}, out_regr: {out_regr.shape}")
             loss_cls = critetion_cls(out_cls, clss)
             loss_regr = critetion_regr(out_regr, regrs)
     

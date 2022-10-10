@@ -7,6 +7,7 @@
 import numpy as np
 import cv2
 from config import *
+import torchsnooper
 
 
 def resize(image, width=None, height=None, inter=cv2.INTER_AREA):
@@ -123,7 +124,7 @@ def bbox_transfrom(anchors, gtboxes):
 
     Vc = (Cy - Cya) / ha
     Vh = np.log(h / ha)
-    print(f"vc: {Vc.shape} Vh:{Vh.shape}, vstack: {np.vstack((Vc, Vh)).transpose().shape}")
+    # print(f"vc: {Vc.shape} Vh:{Vh.shape}, vstack: {np.vstack((Vc, Vh)).transpose().shape}")
     return np.vstack((Vc, Vh)).transpose()
 
 
@@ -132,17 +133,17 @@ def bbox_transfor_inv(anchor, regr):
         return predict bbox
     """
 
-    Cya = (anchor[:, 1] + anchor[:, 3]) * 0.5
-    ha = anchor[:, 3] - anchor[:, 1] + 1
+    Cya = (anchor[:, 1] + anchor[:, 3]) * 0.5       # anchor 中心y坐标
+    ha = anchor[:, 3] - anchor[:, 1] + 1            # anchor 高度
 
-    Vcx = regr[0, :, 0]
-    Vhx = regr[0, :, 1]
+    Vcx = regr[0, :, 0]                             # 中心y坐标偏移系数
+    Vhx = regr[0, :, 1]                             # 高度缩放系数
 
-    Cyx = Vcx * ha + Cya
-    hx = np.exp(Vhx) * ha
-    xt = (anchor[:, 0] + anchor[:, 2]) * 0.5
+    Cyx = Vcx * ha + Cya                            # 利用偏移系数修正之后的anchor box (也即bbox) 中心y坐标
+    hx = np.exp(Vhx) * ha                           # 利用缩放系数修正之后的anchor box (也即bbox) 高度
+    xt = (anchor[:, 0] + anchor[:, 2]) * 0.5        # anchor 宽度
 
-    x1 = xt - 16 * 0.5
+    x1 = xt - 16 * 0.5                              # 最终获得bbox的x1, y1, x2, y2坐标
     y1 = Cyx - hx * 0.5
     x2 = xt + 16 * 0.5
     y2 = Cyx + hx * 0.5
@@ -152,6 +153,20 @@ def bbox_transfor_inv(anchor, regr):
 
 
 def clip_box(bbox, im_shape):
+    """Filter bboxes out of bound
+
+    Parameters
+    ----------
+    bbox : np.narray
+        bboxes waiting to be filtered
+    im_shape : tuple
+        (h, w)
+
+    Returns
+    -------
+    np.narray
+        bboxes filered
+    """
     # x1 >= 0
     bbox[:, 0] = np.maximum(np.minimum(bbox[:, 0], im_shape[1] - 1), 0)
     # y1 >= 0
@@ -165,6 +180,20 @@ def clip_box(bbox, im_shape):
 
 
 def filter_bbox(bbox, minsize):
+    """Filter bbox too small
+
+    Parameters
+    ----------
+    bbox : np.narray
+        bboxes waiting to be filtered
+    minsize : flaot
+        minsize of 
+
+    Returns
+    -------
+    np.narray
+        indices of qualified bboxes
+    """
     ws = bbox[:, 2] - bbox[:, 0] + 1
     hs = bbox[:, 3] - bbox[:, 1] + 1
     keep = np.where((ws >= minsize) & (hs >= minsize))[0]
@@ -229,7 +258,7 @@ def cal_rpn(imgsize, featuresize, scale, gtboxes):
     # base_anchor: anchor box?
     return [labels, bbox_targets], base_anchor
 
-
+@torchsnooper.snoop()
 def nms(dets, thresh):
     x1 = dets[:, 0]
     y1 = dets[:, 1]
