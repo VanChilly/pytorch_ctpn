@@ -66,7 +66,7 @@ class VOCDataset(Dataset):
         gtbox, _ = readxml(xml_path)
         img = cv2.imread(img_path)
         h, w, c = img.shape
-        # clip image
+        # clip image (horizonal flip image?)
         if np.random.randint(2) == 1:
             img = img[:, ::-1, :]
             newx1 = w - gtbox[:, 2] - 1
@@ -87,5 +87,9 @@ class VOCDataset(Dataset):
         cls = torch.from_numpy(cls).float()
         regr = torch.from_numpy(regr).float()
 
+        print(f"m_img: {m_img.shape}, cls: {cls.shape}, regr: {regr.shape}")
+        # m_img: torch.Size([3, 600, 800])
+        # cls: torch.Size([1, 18500])
+        # regr: torch.Size([18500, 3]): [N, [cls, Vc, Vh]]
         return m_img, cls, regr
 

@@ -111,7 +111,8 @@ def cal_overlaps(boxes1, boxes2):
 
 def bbox_transfrom(anchors, gtboxes):
     """
-     compute relative predicted vertical coordinates Vc ,Vh
+        计算平移系数Vc和缩放系数Vh
+        compute relative predicted vertical coordinates Vc ,Vh
         with respect to the bounding box location of an anchor
     """
     regr = np.zeros((anchors.shape[0], 2))
@@ -122,7 +123,7 @@ def bbox_transfrom(anchors, gtboxes):
 
     Vc = (Cy - Cya) / ha
     Vh = np.log(h / ha)
-
+    print(f"vc: {Vc.shape} Vh:{Vh.shape}, vstack: {np.vstack((Vc, Vh)).transpose().shape}")
     return np.vstack((Vc, Vh)).transpose()
 
 
@@ -223,6 +224,9 @@ def cal_rpn(imgsize, featuresize, scale, gtboxes):
     bbox_targets = bbox_transfrom(base_anchor, gtboxes[anchor_argmax_overlaps, :])
     # bbox_targets=[]
 
+    # labels: 每个bbox的标签【1: 有目标 , 2: 无目标, -1: 忽略】
+    # bbox_targets: 最终预测的bbox的相对坐标[N, [Vc, Vh]]
+    # base_anchor: anchor box?
     return [labels, bbox_targets], base_anchor
 
 

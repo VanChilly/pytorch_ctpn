@@ -28,7 +28,7 @@ class RPN_REGR_Loss(nn.Module):
             cls = target[0, :, 0]
             regr = target[0, :, 1:3]
             regr_keep = (cls == 1).nonzero()[:, 0]
-            regr_true = regr[regr_keep]
+            regr_true = regr[regr_keep] # 选出预测为有对象的
             regr_pred = input[0][regr_keep]
             diff = torch.abs(regr_true - regr_pred)
             less_one = (diff<1.0/self.sigma).float()
@@ -90,12 +90,12 @@ class CTPN_Model(nn.Module):
     def __init__(self):
         super().__init__()
         base_model = models.vgg16(pretrained=False)
-        layers = list(base_model.features)[:-1]
+        layers = list(base_model.features)[:-1] # no classifier
         self.base_layers = nn.Sequential(*layers)  # block5_conv3 output
-        self.rpn = BasicConv(512, 512, 3,1,1,bn=False)
+        self.rpn = BasicConv(512, 512, 3, 1, 1, bn=False)
         self.brnn = nn.GRU(512,128, bidirectional=True, batch_first=True)
-        self.lstm_fc = BasicConv(256, 512,1,1,relu=True, bn=False)
-        self.rpn_class = BasicConv(512, 10*2, 1, 1, relu=False,bn=False)
+        self.lstm_fc = BasicConv(256, 512, 1, 1, relu=True, bn=False)
+        self.rpn_class = BasicConv(512, 10 * 2, 1, 1, relu=False, bn=False)
         self.rpn_regress = BasicConv(512, 10 * 2, 1, 1, relu=False, bn=False)
 
     def forward(self, x):
@@ -103,9 +103,9 @@ class CTPN_Model(nn.Module):
         # rpn
         x = self.rpn(x)
 
-        x1 = x.permute(0,2,3,1).contiguous()  # channels last
+        x1 = x.permute(0, 2, 3, 1).contiguous()  # channels last
         b = x1.size()  # batch_size, h, w, c
-        x1 = x1.view(b[0]*b[1], b[2], b[3])
+        x1 = x1.view(b[0] * b[1], b[2], b[3])
 
         x2, _ = self.brnn(x1)
 
