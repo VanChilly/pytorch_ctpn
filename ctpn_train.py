@@ -55,6 +55,7 @@ if __name__ == '__main__':
         pretrained = False
 
     dataset = VOCDataset(args['image_dir'], args['labels_dir'])
+    # 因为图片长宽不一，并且没有做Resize，所以batch_size暂时是1
     dataloader = DataLoader(dataset, batch_size=1, shuffle=True, num_workers=args['num_workers'])
     model = CTPN_Model()
     model.to(device)

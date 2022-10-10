@@ -23,8 +23,8 @@ device = torch.device('cuda:0' if torch.cuda.is_available() else 'cpu')
 img_path = '/HOME/scz0831/run/prune/dataset/VOCdevkit/VOC2007/JPEGImages/img_1001.jpg'
 
 model = CTPN_Model()
-# weights = os.path.join(config.checkpoints_dir, 'trained weights file.pth.tar')
-# model.load_state_dict(torch.load(weights, map_location=device)['model_state_dict'])
+weights = os.path.join(config.checkpoints_dir, 'ctpn_ep02_0.3690_0.1696_0.5385.pth.tar')
+model.load_state_dict(torch.load(weights, map_location=device)['model_state_dict'])
 model.to(device)
 model.eval()
 

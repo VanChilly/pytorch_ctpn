@@ -258,7 +258,7 @@ def cal_rpn(imgsize, featuresize, scale, gtboxes):
     # base_anchor: anchor box?
     return [labels, bbox_targets], base_anchor
 
-@torchsnooper.snoop()
+# @torchsnooper.snoop()
 def nms(dets, thresh):
     x1 = dets[:, 0]
     y1 = dets[:, 1]
@@ -371,6 +371,22 @@ class TextProposalGraphBuilder:
                size_similarity(index1, index2) >= TextLineCfg.MIN_SIZE_SIM
 
     def build_graph(self, text_proposals, scores, im_size):
+        """Make text graph
+
+        Parameters
+        ----------
+        text_proposals : np.narray
+            [N_bbox, 4]
+        scores : np.narray
+            [N_bbox, 1]
+        im_size : List
+            [h, w]
+
+        Returns
+        -------
+        Graph()
+            
+        """
         self.text_proposals = text_proposals
         self.scores = scores
         self.im_size = im_size
@@ -384,10 +400,14 @@ class TextProposalGraphBuilder:
         graph = np.zeros((text_proposals.shape[0], text_proposals.shape[0]), np.bool)
 
         for index, box in enumerate(text_proposals):
+            # 沿水平正方向寻找所有overlap_v > 0.7的匹配
             successions = self.get_successions(index)
             if len(successions) == 0:
                 continue
+            # 找匹配中score最大的succession_index
             succession_index = successions[np.argmax(scores[successions])]
+
+            #沿水平负方向寻找score最大的k，如果score_i >= score_k, 则是一个最长连接
             if self.is_succession_node(index, succession_index):
                 # NOTE: a box can have multiple successions(precursors) if multiple successions(precursors)
                 # have equal scores.
@@ -414,7 +434,8 @@ class TextProposalConnectorOriented:
             return Y[0], Y[0]
         p = np.poly1d(np.polyfit(X, Y, 1))
         return p(x1), p(x2)
-
+    
+    # @torchsnooper.snoop()
     def get_text_lines(self, text_proposals, scores, im_size):
         """
         text_proposals:boxes

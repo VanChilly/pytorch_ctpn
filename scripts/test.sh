@@ -1,1 +1,1 @@
-python ctpn_predict.py
+python -u ctpn_predict.py
